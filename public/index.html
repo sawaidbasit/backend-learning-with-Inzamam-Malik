@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .comment{
+            border: 1px solid black;
+            margin-top: 1rem;
+            border-radius: 1rem;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dummy Weather</h1>
+
+    <form onsubmit="getWeather(); return false">
+        <label for="cityName">City:</label>
+        <input type="text" name="cityName" id="cityName">
+        <br/>
+        <button type="submit">Get Weather</button>
+    </form>
+    <div id="comments">
+        <h2>Commetns</h2>
+        <form id="postCommentForm">
+            <input type="text" id="nameInput" placeholder="Your name" />
+            <input type="text" id="commentInput" placeholder="Your comment Box" />
+            <button type="submit">Comment</button>
+        </form>
+    </div>
+    <div id="previousComment">
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script type="module">
+        let name = 'alice'
+
+        window.getWeather = function () {
+            let cityName = document.querySelector("#cityName").value;
+
+            axios.get(`weather/${cityName}`)
+                .then(function (response) {
+                    console.log(response.data)
+
+                    document.querySelector("#query").innerHTML = 
+                `current temperature is ${response.data.tempInC}C`
+                })
+                .catch(function (error) {
+                    console.log(error.data);
+                    document.querySelector("#result").innerHTML = `error in getting ${cityName}`
+                })
+            
+        }
+
+        document.querySelector("#postCommentForm").addEventListener("submit", async(event)=> {
+            event.preventDefault()
+            let commentInput = document.querySelector("#commentInput").value;
+            let userName = document.querySelector("#nameInput").value;
+
+            try {
+                let axiosResponse = await axios.post(`comment/${userName}`, {
+                    comment: commentInput,
+                })
+
+                    document.querySelector("#previousComment").innerHTML += 
+                    `<div class="comment">
+                    <h4 class="commentName">${userName}</h4>
+                    <p class="commentText">${commentInput}</p>
+                    </div>`
+                
+            } catch (error) {
+                console.log(error.data);
+                    document.querySelector("#result").innerHTML = `error in getting ${cityName}`
+            }
+            
+        })
+    
+        const getAllComments = async()=>{
+           const axiosResponse =  await axios.get('/comments')
+           console.log(axiosResponse.data, "<====== axiosResponse")
+           axiosResponse.data.map((elem)=>{
+            document.querySelector("#previousComment").innerHTML += 
+                    `<div class="comment">
+                    <h4 class="commentName">${elem.name}</h4>
+                    <p class="commentText">${elem.comment}</p>
+                    </div>`
+           })
+        }
+
+        setTimeout(()=>{
+            getAllComments()
+        },100)
+    </script>
+</body>
+</html>
